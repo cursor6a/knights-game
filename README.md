@@ -1,5 +1,5 @@
 # 骑士的游戏
-预览地址 https://github.com/cursor6a/knights-game
+预览地址 https://cursor6a.github.io/knights-game
 
 这是一个经典的有必胜策略的游戏
 
