@@ -1,3 +1,10 @@
+let gameRules = '<h2>游戏规则</h2>\n' +
+    '<p>1. 玩家点击棋盘选择棋子起始位置</p>\n' +
+    '<p>2. 电脑先手，按照“马走日”的规则移动</p>\n' +
+    '<p>3. 双方轮流移动棋子至未走过的格子</p>\n' +
+    '<p>4. 若一方无路可走，则判该方输</p>'
+let container = document.querySelector('.rules');
+container.innerHTML = gameRules;
 // 初始化棋盘HTML结构
 let str = '';
 for (let row = 0; row < 8; row++) {
@@ -13,28 +20,56 @@ let board = document.querySelector('.board');
 board.innerHTML = str;  // 嵌入棋盘HTML结构
 
 // 初始化访问记录数组
-let visited = [];
-for (let i = 0; i < 8; i++)
-    visited[i] = [];
+let visited = [[], [], [], [], [], [], [], []];
 
 let isTurn = true;
 let current = null;  // 当前棋子位置
+let start, end;
 
+let gameMode = 'game';  // 默认是博弈模式
+
+// 获取模式选择按钮
+const modeButtons = document.querySelectorAll('.mode-btn');
+modeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // 切换模式
+        modeButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        gameMode = button.dataset.mode;
+    });
+});
+
+// 棋盘点击事件
 board.addEventListener('click', e => {
     let li = e.target;
     if (li.tagName === 'LI' && isTurn) {
-        // console.log(li.id, li.parentNode.id);        
+        // console.log(li.id, li.parentNode.id);
         if (current !== null) {  // 若不是第一次点击
-            if (isValidMove(li)) {
+            if (gameMode === 'path') {
+                if (end !== undefined)
+                    return;
+                end = [Number(li.id), Number(li.parentNode.id)];
+                shortestMove();
+            } else if (isValidMove(li)) {
                 current.classList.add('shadow');
                 current.innerText = '';  // 清空格子
             } else return;
         }
-        isTurn = false;
         visited[li.parentNode.id][li.id] = true;
+        if (gameMode === 'path') {
+            if (end === undefined) {
+                li.innerText = '♘';
+                current = li;
+                start = [Number(current.id), Number(current.parentNode.id)];
+            }
+            return;
+        }
         current = li;
         li.innerText = '♘';
-        setTimeout(bestMove, 500);
+        if (gameMode === 'game') {
+            isTurn = false;
+            setTimeout(bestMove, 500);
+        }
     }
 })
 
@@ -84,7 +119,7 @@ function bestMove() {
 
     // 执行移动
     let li = document.evaluate(`//ul[${r + 1}]/li[${c + 1}]`, document).iterateNext();
-    // console.log(li);
+
     current.classList.add('shadow');
     current.innerText = '';  // 清空格子
     visited[r][c] = true;
@@ -92,4 +127,50 @@ function bestMove() {
     li.innerText = '♘';
     isTurn = true;
     setTimeout(checkGameOver, 100);
+}
+
+function shortestMove() {
+    let r = bfs(start, end);
+    let path = [];
+    while (r) {
+        path.unshift(r.pos);
+        r = r.lastP;
+    }
+    console.log(start, end);
+    let first = true;
+    let timer = setInterval(() => {
+        let [x, y] = path.shift();
+        if (!first) {
+            current.innerText = '';
+            current.classList.add('shadow');
+        }
+        first = false;
+        let li = document.evaluate(`//ul[${y + 1}]/li[${x + 1}]`, document).iterateNext();
+        li.innerText = '♘';
+        current = li;
+        if (!path.length)
+            clearInterval(timer);
+    }, 500);
+}
+
+function bfs(start, end) {
+    let vis = [[], [], [], [], [], [], [], []];
+    const moves = [[1, 2], [2, 1], [1, -2], [-2, 1], [-1, 2], [2, -1], [-2, -1], [-1, -2]]
+    let startP = {pos: start};
+    let queue = [startP];
+    while (queue.length) {
+        let thisP = queue.shift();
+        let [x, y] = thisP.pos;
+        for (let i = 0; i < 8; i++) {
+            let [dx, dy] = moves[i];
+            let [nx, ny] = [x + dx, y + dy];
+            if (nx >= 0 && nx < 8 && ny >= 0 && ny < 8 && !vis[ny][nx]) {
+                vis[ny][nx] = true;
+                queue.push({pos: [nx, ny], lastP: thisP});
+                if (nx === end[0] && ny === end[1]) {
+                    return queue.pop();
+                }
+            }
+        }
+    }
 }

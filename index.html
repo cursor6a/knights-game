@@ -8,15 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <div class="rules">
-            <h2>游戏规则</h2>
-            <p>1. 玩家点击棋盘选择棋子起始位置</p>
-            <p>2. 电脑先手，按照“马走日”的规则移动</p>
-            <p>3. 双方轮流移动棋子至未走过的格子</p>
-            <p>4. 若有一方无路可走，则判该方输</p>
+        <div class="control-panel">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="game">博 弈</button>
+                <button class="mode-btn" data-mode="free">自 由</button>
+                <button class="mode-btn" data-mode="path">最短路径</button>
+                <button class="mode-btn" data-mode="tour">骑士周游</button>
+            </div>
+            <div class="rules"></div>
         </div>
         <div class="board"></div>
     </div>
+
     <a href="https://github.com/cursor6a/knights-game">在 GitHub 上查看</a>
     <script src="main.js"></script>
 </body>
