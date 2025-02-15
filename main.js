@@ -2,7 +2,17 @@ let gameRules = '<h2>游戏规则</h2>\n' +
     '<p>1. 玩家点击棋盘选择棋子起始位置</p>\n' +
     '<p>2. 电脑先手，按照“马走日”的规则移动</p>\n' +
     '<p>3. 双方轮流移动棋子至未走过的格子</p>\n' +
-    '<p>4. 若一方无路可走，则判该方输</p>'
+    '<p>4. 若一方无路可走，则判该方输</p>';
+let freeRules = '<h2>提示</h2>\n' +
+    '<p>1. 你可以连续移动棋子至未走过的格子</p>' +
+    '<p>2. 也可以跟你的玩伴轮流移动棋子</p>';
+let pathRules = '<h2>提示</h2>\n' +
+    '<p>1. 先后点击棋盘确定起点与终点</p>' +
+    '<p>2. 系统将自动演示一条最短路径</p>';
+let tourRules= '<h2>提示</h2>\n' +
+    '<p>1. 点击棋盘选择棋子起始位置</p>'+
+    '<p>2. 系统将自动演示一条能走遍所有棋盘格恰好一次的路径</p>'
+
 let container = document.querySelector('.rules');
 container.innerHTML = gameRules;
 // 初始化棋盘HTML结构
@@ -28,14 +38,20 @@ let start, end;
 
 let gameMode = 'game';  // 默认是博弈模式
 
-// 获取模式选择按钮
-const modeButtons = document.querySelectorAll('.mode-btn');
-modeButtons.forEach(button => {
+// 获取模式选择控件
+let modeControls = document.querySelectorAll('.mode-btn');
+modeControls.forEach(button => {
     button.addEventListener('click', () => {
-        // 切换模式
-        modeButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        gameMode = button.dataset.mode;
+        if (current === null) {
+            // 切换模式
+            modeControls.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            gameMode = button.dataset.mode;
+            if (gameMode === 'game') container.innerHTML = gameRules;
+            else if (gameMode === 'free') container.innerHTML = freeRules;
+            else if (gameMode === 'path') container.innerHTML = pathRules;
+            else container.innerHTML = tourRules;
+        }
     });
 });
 
