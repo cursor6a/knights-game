@@ -93,7 +93,7 @@ ul:nth-child(even) li:nth-child(odd) {
 
 /* 数字标记样式 */
 li.marked {
-    font-size: 20px; /* 使用固定像素值 */
+    font-size: 18px; /* 使用固定像素值 */
     padding: 0; /* 去除内边距 */
     margin: 0; /* 去除外边距 */
 }
@@ -115,7 +115,7 @@ li.marked {
     }
 
     li.marked {
-        font-size: 28px; /* 大屏幕下调整数字标记字体大小 */
+        font-size: 26px; /* 大屏幕下调整数字标记字体大小 */
     }
 }
 

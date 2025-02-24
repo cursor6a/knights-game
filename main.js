@@ -14,11 +14,13 @@ let freeRules = '<h2>提示</h2>' +
 
 let pathRules = '<h2>提示</h2>' +
     '<p>1. 先后点击棋盘确定起点与终点</p>' +
-    '<p>2. 系统将演示一条最短路径</p>';
+    '<p>2. 系统将演示一条最短路径</p>' +
+    '<p>3. 按 F12 打开控制台可立即查看结果</p>';
 
 let tourRules = '<h2>提示</h2>' +
     '<p>1. 点击棋盘选择棋子起始位置</p>' +
-    '<p>2. 系统将演示一条能走遍所有棋盘格恰好一次的路径</p>';
+    '<p>2. 系统将演示一条能走遍所有棋盘格恰好一次的路径</p>' +
+    '<p>3. 按 F12 打开控制台可立即查看结果</p>';
 
 let container = document.querySelector('.rules');
 container.innerHTML = gameRules;
@@ -72,6 +74,7 @@ board.addEventListener('click', e => {
     if (li.tagName === 'LI' && isTurn) {
         // console.log(li.id, li.parentNode.id);
         if (current !== undefined) {  // 若不是第一次点击
+            if (gameMode === 'tour') return;
             if (gameMode === 'path') {
                 if (end !== undefined)
                     return;
@@ -86,6 +89,11 @@ board.addEventListener('click', e => {
                     current.innerText = '';  // 清空格子
                 }
             } else return;
+        }
+        if (gameMode === 'tour') {
+            current = li;
+            li.innerText = '♘';
+            tour();
         }
         if (gameMode === 'free')
             checkbox.disabled = true;
@@ -159,11 +167,14 @@ function bestMove() {
 function shortestMove() {
     let r = bfs(start, end);
     let path = [];
-    while (r) {
+    while (r) {  // 转换为直观的路径点数组
         path.unshift(r.pos);
         r = r.lastP;
     }
-    console.log(start, end);
+    // console.log(start, end);
+    for (let i of path)
+        console.log(i);
+
     let first = true;
     let timer = setInterval(() => {
         let [x, y] = path.shift();
@@ -182,9 +193,8 @@ function shortestMove() {
 
 function bfs(start, end) {
     let vis = [[], [], [], [], [], [], [], []];
-    const moves = [[1, 2], [2, 1], [1, -2], [-2, 1], [-1, 2], [2, -1], [-2, -1], [-1, -2]]
-    let startP = {pos: start};
-    let queue = [startP];
+    const moves = [[1, 2], [2, 1], [1, -2], [-2, 1], [-1, 2], [2, -1], [-2, -1], [-1, -2]];
+    let queue = [{pos: start}];
     while (queue.length) {
         let thisP = queue.shift();
         let [x, y] = thisP.pos;
@@ -200,4 +210,93 @@ function bfs(start, end) {
             }
         }
     }
+}
+
+
+let endP;
+let finished;
+
+
+// console.log(ifSolved());
+const moves = [[2, 1], [2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2], [-2, 1], [-2, -1]];
+
+function next(thisP) {
+    let all = [];
+    let [x, y] = thisP.pos;
+    for (let i = 0; i < 8; i++) {
+        let [dx, dy] = moves[i];
+        let [nx, ny] = [x + dx, y + dy];
+        if (nx >= 0 && nx < 8 && ny >= 0 && ny < 8 && !visited[ny][nx])
+            all.push({pos: [nx, ny], lastP: thisP});
+    }
+    return all;
+}
+
+// 比较函数，这一点没有python的sort(key=...)语法简洁
+function compare(p1, p2) {
+    //获取到p1的下一步的所有位置个数
+    let count1 = next(p1).length;
+    //获取到p2的下一步的所有位置个数
+    let count2 = next(p2).length;
+    if (count1 < count2)
+        return -1;
+    if (count1 === count2)
+        return 0;
+    return 1;
+}
+
+function dfs(board, thisP, step) {
+    let [col, row] = thisP.pos;
+    board[row][col] = step;
+    visited[row][col] = true;  // 标记为已访问
+    // 获取当前位置可以走的下一个位置的集合
+    let ps = next(thisP);
+    // 贪心算法优化，对ps中所有的point下一步的所有集合的数目，进行非递减排序，其实就是递增
+    ps.sort(compare);
+    // 遍历ps
+    while (ps.length) {
+        // 取出下一个可以走的位置
+        let [x, y] = ps.shift().pos;
+        // 判断该点是否已经访问过
+        if (!visited[y][x])
+            // 还没访问过
+            dfs(board, {pos: [x, y], lastP: thisP}, step + 1);
+    }
+
+    // 判断马儿是否完成了任务
+    // 如果没有达到数量，则表示没有完成任务，将整个棋盘置0
+    if (step < 64 && !finished) {
+        board[row][col] = 0;
+        visited[row][col] = false;
+    } else {
+        finished = true;
+        if (step === 64)
+            endP = thisP;
+    }
+}
+
+function tour() {
+    let p = {pos: [Number(current.id), Number(current.parentNode.id)]};
+    let mark = [[], [], [], [], [], [], [], []];
+    dfs(mark, p, 1)
+    console.log(mark)
+    let r = endP;
+    let path = [];
+    while (r) {
+        path.unshift(r.pos);
+        r = r.lastP;
+    }
+    console.log(path);
+    let count = 0;
+    let timer = setInterval(() => {
+        let [x, y] = path.shift();
+        if (count !== 0)
+            current.classList.add('marked');
+        current.innerText = count++;
+        let li = document.evaluate(`//ul[${y + 1}]/li[${x + 1}]`, document).iterateNext();
+        li.innerText = '♘';
+        current = li;
+        if (!path.length)
+            clearInterval(timer);
+    }, 300);
 }
