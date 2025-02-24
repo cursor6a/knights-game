@@ -49,7 +49,7 @@
 - YouTube 视频：[https://youtu.be/ZGWZM8PcUlY](https://youtu.be/ZGWZM8PcUlY)
 
 ## Clone 项目
-1. clone 本项目到本地：
+1. clone 此项目到本地：
    ```bash
    git clone https://github.com/cursor6a/knights-game.git
    ```
