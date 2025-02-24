@@ -30,8 +30,6 @@
    - 演示骑士遍历整个棋盘且每个格子恰好经过一次的路径 
    - 玩家选择起始位置后，系统会自动演示骑士周游路径
 
-## 更新
-添加了自由模式、演示最短路径、骑士周游等问题的程序
 ## 技术实现
 - **HTML/CSS**：构建游戏界面和棋盘布局，使用 Flexbox 和 Grid 实现响应式设计
 - **JavaScript**：实现游戏逻辑、骑士移动算法（如 BFS 最短路径算法）和交互功能
@@ -50,8 +48,8 @@
 ## 参考资料
 - YouTube 视频：[https://youtu.be/ZGWZM8PcUlY](https://youtu.be/ZGWZM8PcUlY)
 
-## 如何运行
-1. 克隆本项目到本地：
+## Clone 项目
+1. clone 本项目到本地：
    ```bash
    git clone https://github.com/cursor6a/knights-game.git
    ```
