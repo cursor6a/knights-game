@@ -1,3 +1,4 @@
+// 定义游戏规则文本
 let gameRules = '<h2>游戏规则</h2>' +
     '<p>1. 玩家点击棋盘选择棋子起始位置</p>' +
     '<p>2. 电脑先手，按照“马走日”的规则移动</p>' +
@@ -22,6 +23,7 @@ let tourRules = '<h2>提示</h2>' +
     '<p>2. 系统将演示一条能走遍所有棋盘格恰好一次的路径</p>' +
     '<p>3. 按 F12 打开控制台可立即查看结果</p>';
 
+// 获取容器并初始化显示游戏规则
 let container = document.querySelector('.rules');
 container.innerHTML = gameRules;
 
@@ -43,11 +45,11 @@ let visited = [[], [], [], [], [], [], [], []];
 
 let isTurn = true;
 let current;  // 当前棋子位置
-let start, end;
+let start, end;  // 记录起点和终点
 
 let gameMode = 'game';  // 默认是博弈模式
-let checkbox;
-let count = 0;
+let checkbox;  // 是否用数字标记的复选框
+let count = 0;  // 用于记录移动步数
 
 // 获取模式选择控件
 let modeControls = document.querySelectorAll('.mode-btn');
@@ -117,10 +119,10 @@ board.addEventListener('click', e => {
 
 // 判断移动是否合法
 function isValidMove(next) {
-    if (visited[next.parentNode.id][next.id]) return false;
+    if (visited[next.parentNode.id][next.id]) return false;  // 如果目标位置已经访问过，则为非法移动
     let dx = Math.abs(next.id - current.id);
     let dy = Math.abs(next.parentNode.id - current.parentNode.id);
-    return dx === 1 && dy === 2 || dx === 2 && dy === 1;
+    return dx === 1 && dy === 2 || dx === 2 && dy === 1;  // 判断是否符合“马走日”的规则
 }
 
 // 判断玩家是否无路可走，并提示
@@ -164,16 +166,18 @@ function bestMove() {
     setTimeout(checkGameOver, 100);
 }
 
+// 展示最短路径
 function shortestMove() {
     let r = bfs(start, end);
     let path = [];
+    // 从结束位置回溯，生成完整的路径
     while (r) {  // 转换为直观的路径点数组
         path.unshift(r.pos);
-        r = r.lastP;
+        r = r.lastP;  // 回溯到上一个位置
     }
     // console.log(start, end);
-    for (let i of path)
-        console.log(i);
+    for (let p of path)
+        console.log(p);
 
     let first = true;
     let timer = setInterval(() => {
@@ -186,11 +190,12 @@ function shortestMove() {
         let li = document.evaluate(`//ul[${y + 1}]/li[${x + 1}]`, document).iterateNext();
         li.innerText = '♘';
         current = li;
-        if (!path.length)
+        if (!path.length)  // 清除定时器
             clearInterval(timer);
-    }, 500);
+    }, 500);  // 每0.5秒移动一步
 }
 
+// 广度优先搜索（BFS）函数
 function bfs(start, end) {
     let vis = [[], [], [], [], [], [], [], []];
     const moves = [[1, 2], [2, 1], [1, -2], [-2, 1], [-1, 2], [2, -1], [-2, -1], [-1, -2]];
@@ -212,14 +217,15 @@ function bfs(start, end) {
     }
 }
 
-
+// 骑士周游相关变量
+let mark = [[], [], [], [], [], [], [], []];
 let endP;
 let finished;
 
 
-// console.log(ifSolved());
 const moves = [[2, 1], [2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2], [-2, 1], [-2, -1]];
 
+// 获取当前位置的所有可能下一步
 function next(thisP) {
     let all = [];
     let [x, y] = thisP.pos;
@@ -245,9 +251,10 @@ function compare(p1, p2) {
     return 1;
 }
 
-function dfs(board, thisP, step) {
+// 结合贪心算法的深度优先搜索（DFS）函数
+function dfs(thisP, step) {
     let [col, row] = thisP.pos;
-    board[row][col] = step;
+    mark[row][col] = step;
     visited[row][col] = true;  // 标记为已访问
     // 获取当前位置可以走的下一个位置的集合
     let ps = next(thisP);
@@ -260,13 +267,13 @@ function dfs(board, thisP, step) {
         // 判断该点是否已经访问过
         if (!visited[y][x])
             // 还没访问过
-            dfs(board, {pos: [x, y], lastP: thisP}, step + 1);
+            dfs({pos: [x, y], lastP: thisP}, step + 1);
     }
 
     // 判断马儿是否完成了任务
     // 如果没有达到数量，则表示没有完成任务，将整个棋盘置0
     if (step < 64 && !finished) {
-        board[row][col] = 0;
+        mark[row][col] = 0;
         visited[row][col] = false;
     } else {
         finished = true;
@@ -275,23 +282,25 @@ function dfs(board, thisP, step) {
     }
 }
 
+// 展示骑士周游路径
 function tour() {
     let p = {pos: [Number(current.id), Number(current.parentNode.id)]};
-    let mark = [[], [], [], [], [], [], [], []];
-    dfs(mark, p, 1)
-    console.log(mark)
+    dfs(p, 1);
+    console.log(mark);
     let r = endP;
     let path = [];
     while (r) {
         path.unshift(r.pos);
         r = r.lastP;
     }
-    console.log(path);
-    let count = 0;
+    for (let i = 0; i < 64; i++)
+        console.log(i + 1, path[i]);
+
+    let count = 0;  // 用于记录当前步数
     let timer = setInterval(() => {
         let [x, y] = path.shift();
         if (count !== 0)
-            current.classList.add('marked');
+            current.classList.add('marked');  // 采用数字标记
         current.innerText = count++;
         let li = document.evaluate(`//ul[${y + 1}]/li[${x + 1}]`, document).iterateNext();
         li.innerText = '♘';
