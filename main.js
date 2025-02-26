@@ -83,7 +83,7 @@ board.addEventListener('click', e => {
                 end = [Number(li.id), Number(li.parentNode.id)];
                 shortestMove();
             } else if (isValidMove(li)) {
-                if (checkbox.checked) {
+                if (gameMode === 'free' && checkbox.checked) {
                     current.classList.add('marked');
                     current.innerText = ++count;
                 } else {
