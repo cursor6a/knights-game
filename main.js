@@ -219,7 +219,7 @@ function bfs(start, end) {
 
 // 骑士周游相关变量
 let mark = [[], [], [], [], [], [], [], []];
-let endP;
+let path = [];
 let finished;
 
 
@@ -228,12 +228,12 @@ const moves = [[2, 1], [2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2], [-2, 1], [-2
 // 获取当前位置的所有可能下一步
 function next(thisP) {
     let all = [];
-    let [x, y] = thisP.pos;
+    let [x, y] = thisP;
     for (let i = 0; i < 8; i++) {
         let [dx, dy] = moves[i];
         let [nx, ny] = [x + dx, y + dy];
         if (nx >= 0 && nx < 8 && ny >= 0 && ny < 8 && !visited[ny][nx])
-            all.push({pos: [nx, ny], lastP: thisP});
+            all.push([nx, ny]);
     }
     return all;
 }
@@ -251,11 +251,13 @@ function compare(p1, p2) {
     return 1;
 }
 
+
 // 结合贪心算法的深度优先搜索（DFS）函数
 function dfs(thisP, step) {
-    let [col, row] = thisP.pos;
+    let [col, row] = thisP;
     mark[row][col] = step;
     visited[row][col] = true;  // 标记为已访问
+    path.push(thisP);
     // 获取当前位置可以走的下一个位置的集合
     let ps = next(thisP);
     // 贪心算法优化，对ps中所有的point下一步的所有集合的数目，进行非递减排序，其实就是递增
@@ -263,36 +265,28 @@ function dfs(thisP, step) {
     // 遍历ps
     while (ps.length) {
         // 取出下一个可以走的位置
-        let [x, y] = ps.shift().pos;
+        let [x, y] = ps.shift();
         // 判断该点是否已经访问过
         if (!visited[y][x])
             // 还没访问过
-            dfs({pos: [x, y], lastP: thisP}, step + 1);
+            dfs([x, y], step + 1);
     }
 
     // 判断马儿是否完成了任务
-    // 如果没有达到数量，则表示没有完成任务，将整个棋盘置0
+    // 如果没有达到数量，则表示没有完成任务，需要回溯
     if (step < 64 && !finished) {
         mark[row][col] = 0;
         visited[row][col] = false;
-    } else {
+        path.pop();
+    } else
         finished = true;
-        if (step === 64)
-            endP = thisP;
-    }
 }
 
 // 展示骑士周游路径
 function tour() {
-    let p = {pos: [Number(current.id), Number(current.parentNode.id)]};
+    let p = [Number(current.id), Number(current.parentNode.id)];
     dfs(p, 1);
     console.log(mark);
-    let r = endP;
-    let path = [];
-    while (r) {
-        path.unshift(r.pos);
-        r = r.lastP;
-    }
     for (let i = 0; i < 64; i++)
         console.log(i + 1, path[i]);
 
