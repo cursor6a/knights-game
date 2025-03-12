@@ -209,9 +209,8 @@ function bfs(start, end) {
             if (nx >= 0 && nx < 8 && ny >= 0 && ny < 8 && !vis[ny][nx]) {
                 vis[ny][nx] = true;
                 queue.push({pos: [nx, ny], lastP: thisP});
-                if (nx === end[0] && ny === end[1]) {
+                if (nx === end[0] && ny === end[1])
                     return queue.pop();
-                }
             }
         }
     }
